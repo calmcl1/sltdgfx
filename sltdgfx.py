@@ -6,28 +6,12 @@ import pycasper
 __author__ = 'Callum McLean'
 
 
-class MainWindow(wx.Frame):
-    """
-    Does a thing, makes a thing happen
-    """
-    def __init__(self):
-        wx.Frame.__init__(self, None, title="UberCarrot", size=(-1, -1))
-        self.Bind(wx.EVT_CLOSE, self.on_close)
+class SystemSetupPanel(wx.Panel):
 
-        self._mgr = aui.AuiManager()
-        self._mgr.SetAGWFlags(aui.AUI_MGR_LIVE_RESIZE | aui.AUI_MGR_USE_NATIVE_MINIFRAMES)
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent=parent, id=wx.ID_ANY)
 
-        # notify AUI which frame to use
-        self._mgr.SetManagedWindow(self)
-
-        print "Loading UI..."
-        # To avoid having the ugly dark-grey background on Windows, we'll use a wxPanel as the only child object
-        # of the wxFrame. All the control will be children of the wxPanel.
-
-        self.panel_text_boxes = wx.Panel(self, -1)
-        sizer_data_entry = wx.BoxSizer(wx.VERTICAL) # All the text-stuff and the submit button goes in here.
-        self.panel_cg_recall = wx.Panel(self, -1)
-        sizer_cg_recall = wx.BoxSizer(wx.VERTICAL) # We'll put all the 'Recall Template' buttons in here
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
 
         # We need lots of text fields, to enter text in!
         # These also need labels.
@@ -35,47 +19,78 @@ class MainWindow(wx.Frame):
         # mini-array, which will populate a large array of all of the text fields.
         # There's also a separate sizer for all of the text controls.
 
-        num_text_fields = 20 # How many text fields do we want to provide?
+        num_text_fields = 20  # How many text fields do we want to provide?
         sizer_text_fields = wx.FlexGridSizer(num_text_fields, 2)
         self.textInputFields = []
 
         for i in xrange(0, num_text_fields):
-            text_field = wx.TextCtrl(self.panel_text_boxes)
-            text_field_label = wx.StaticText(self.panel_text_boxes, -1, "f{0} text".format(i))
+            text_field = wx.TextCtrl(self)
+            text_field_label = wx.StaticText(
+                self, -1, "f{0} text".format(i))
             print "\tAdding text field: f{0}".format(i)
             controls = [text_field_label, text_field]
             self.textInputFields.append(controls)
             sizer_text_fields.AddMany(controls)
 
-        print "\tAdding SUBMIT button" # The important one
-        self.button_submit = wx.Button(self.panel_text_boxes, -1, "SUBMIT", style=wx.BU_EXACTFIT)
+        print "\tAdding SUBMIT button"  # The important one
+        self.button_submit = wx.Button(
+            self, -1, "SUBMIT", style=wx.BU_EXACTFIT)
 
-        ################################
-        # RECALL BUTTONS
-        ################################
+        self.sizer.Add(sizer_text_fields)
+        self.sizer.Add(self.button_submit)
+        self.SetSizerAndFit(self.sizer)
 
-        num_templates = 5 # How many templates shall we have?
+
+class CoupleScoringJudgesPanel(wx.Panel):
+
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent=parent, id=wx.ID_ANY)
+
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
+
+        num_templates = 5  # How many templates shall we have?
         self.template_buttons = []
         for i in xrange(0, num_templates):
             print "\tAdding recall button: #{0}".format(i)
-            btn = wx.Button(self.panel_cg_recall, label="Recall Template {0}".format(i))
+            btn = wx.Button(self,
+                            label="Recall Template {0}".format(i))
             self.template_buttons.append(btn)
-            sizer_cg_recall.Add(btn)
+            self.sizer.Add(btn)
 
-        ################################
-        # BUILD UI
-        ################################
+        self.SetSizerAndFit(self.sizer)
 
-        # All together, now!
-        sizer_data_entry.Add(sizer_text_fields)
-        sizer_data_entry.Add(self.button_submit)
-        self.panel_text_boxes.SetSizerAndFit(sizer_data_entry)
 
-        self.panel_cg_recall.SetSizerAndFit(sizer_cg_recall)
+class MainWindow(wx.Frame):
+    """
+    Does a thing, makes a thing happen
+    """
 
-        self._mgr.AddPane(self.panel_text_boxes, wx.CENTER, 'Template Data')
-        self._mgr.AddPane(self.panel_cg_recall, wx.RIGHT, 'Template Recall')
+    def __init__(self):
+        wx.Frame.__init__(self, None, title="UberCarrot", size=(1000, 800))
+        self.Bind(wx.EVT_CLOSE, self.on_close)
 
+        self._mgr = aui.AuiManager()
+        self._mgr.SetAGWFlags(aui.AUI_MGR_LIVE_RESIZE |
+                              aui.AUI_MGR_USE_NATIVE_MINIFRAMES)
+
+        # notify AUI which frame to use
+        self._mgr.SetManagedWindow(self)
+
+        print "Loading UI..."
+        # To avoid having the ugly dark-grey background on Windows, we'll use a wxPanel as the only
+        # child object of the wxFrame. All the control will be children of the
+        # wxPanel.
+
+        self.tab_window = aui.wx.Notebook(self, -1)
+        self.panel_system_setup = SystemSetupPanel(self.tab_window)
+        self.panel_scoring_judges = CoupleScoringJudgesPanel(self.tab_window)
+
+        self.tab_window.AddPage(self.panel_system_setup, "boxes", True)
+        self.tab_window.AddPage(self.panel_scoring_judges, "data", False)
+
+        self._mgr.AddPane(self.panel_system_setup, wx.CENTER, 'Template Data')
+        self._mgr.AddPane(self.panel_scoring_judges,
+                          wx.RIGHT, 'Template Recall')
 
         self._mgr.Update()
         # Boom.
