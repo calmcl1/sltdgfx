@@ -1,6 +1,6 @@
 import wx
 import wx.lib.agw.aui as aui
-import caspartalk
+import pycasper
 
 
 __author__ = 'Callum McLean'
