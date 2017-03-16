@@ -111,18 +111,6 @@ class MainWindow(wx.Frame):
 
         self.scoreboard = sltd_scoreboard.Scoreboard(self)
 
-        couples = []
-        for i in xrange(0, 10):
-            c = sltd_couple.Couple()
-            c.couple_name = "Couple {0}".format(i)
-            for i in xrange(0, 4):
-                c.set_score(i, random.randint(1, 10))
-            couples.append(c)
-
-        couples = sorted(
-            couples, key=lambda couple: couple.total, reverse=True)
-        self.scoreboard.populateLeaderboard(couples)
-
         self.sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.sizer.Add(self.tab_window, 3, wx.EXPAND)
         self.sizer.Add(self.scoreboard, 1, wx.EXPAND)
@@ -131,9 +119,21 @@ class MainWindow(wx.Frame):
         self.SetSizer(self.sizer)
         self.Layout()
 
-        # self._mgr.Update()
-        # Boom.
+        couple_mgr = sltd_couple.CoupleMgr()
+
+        # Generate some fake couples for now
+        for i in xrange(0, 10):
+            c = sltd_couple.Couple()
+            c.set_couple_name("Couple {0}".format(i))
+            for j in xrange(0, 4):
+                c.set_score(j, random.randint(1, 10))
+            couple_mgr.add_couple(c, i)
+
+        # Get list of couples in score order and add them to the leaderboard
+        self.scoreboard.populate_scoreboard(couple_mgr.get_couples_order_score())
+        
         self.Show()
+
 
     def on_close(self, event):
         """
@@ -141,5 +141,4 @@ class MainWindow(wx.Frame):
         :param event: The event provided by wxWindows
         :return:
         """
-        # self._mgr.UnInit()
         self.Destroy()
