@@ -32,19 +32,21 @@ class CoupleMgr(object):
         self.couples = {}
 
     def add_couple(self, couple, id=-1):
-        """Add a new couple to the list"""
+        """Add a new couple to the list."""
         if self.couples.has_key(id):
             return ValueError("Couple with key {0} already exists".format(id))
 
         self.couples[id] = couple
 
     def get_couple(self, couple_id):
-        """Return the Couple with the given ID"""
+        """Return the Couple with the given ID."""
         if self.couples.has_key(couple_id):
             return self.couples[couple_id]
         else:
             return KeyError("No couple exists with ID {0}".format(couple_id))
 
     def get_couples_order_score(self):
-        """Return a list of couple IDs in total score order, highest score first."""
+        """Return a list of couples in total score order, highest score first.
+        Note: This returns a *copy* of the couple list - updating any of these couples will not
+        update the leaderboard. Use `get_couple` to update actual couples."""
         return sorted(self.couples.iteritems(), key=lambda (k, v): v.total, reverse=True)
