@@ -6,7 +6,6 @@ class Couple(object):
         self.couple_name = ""
         self.scores = [0, 0, 0, 0]
         self.total = sum(self.scores)
-        self.id = -1
 
     def __update_total(self):
         """Internal function used to update the total score when an indiviudal score is updated."""
@@ -50,3 +49,9 @@ class CoupleMgr(object):
         Note: This returns a *copy* of the couple list - updating any of these couples will not
         update the leaderboard. Use `get_couple` to update actual couples."""
         return sorted(self.couples.iteritems(), key=lambda (k, v): v.total, reverse=True)
+
+    def get_couples_order_id(self):
+        """Return a list of couples ID order, lowest ID first.
+        Note: This returns a *copy* of the couple list - updating any of these couples will not
+        update the leaderboard. Use `get_couple` to update actual couples."""
+        return sorted(self.couples.iteritems(), key=lambda (k, v): k)

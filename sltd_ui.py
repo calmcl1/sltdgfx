@@ -6,33 +6,60 @@ import sltd_scoreboard
 import random
 random.seed()
 
+couple_mgr = sltd_couple.CoupleMgr()
+
 class SystemSetupPanel(wx.Panel):
     """"""
 
     def __init__(self, parent):
         wx.Panel.__init__(self, parent=parent, id=wx.ID_ANY)
-
         self.sizer = wx.BoxSizer(wx.VERTICAL)
 
-        # We need lots of text fields, to enter text in!
-        # These also need labels.
-        # To keep thing simple, we'll group each text-field/label pair in a
-        # mini-array, which will populate a large array of all of the text fields.
-        # There's also a separate sizer for all of the text controls.
+        # COUPLES SETUP
 
-        num_text_fields = 20  # How many text fields do we want to provide?
-        sizer_text_fields = wx.FlexGridSizer(num_text_fields, 2)
-        self.text_input_fields = []
+        self.couples_box = wx.StaticBox(self, -1, "Couples Setup")
+        self.couples_sizer = wx.StaticBoxSizer(self.couples_box, wx.VERTICAL)
+        self.couple_entries = [] # (StaticText, TextCtrl)
 
-        for i in xrange(0, num_text_fields):
-            text_field = wx.TextCtrl(self)
-            text_field_label = wx.StaticText(
-                self, -1, "f{0} text".format(i))
-            controls = [text_field_label, text_field]
-            self.text_input_fields.append(controls)
-            sizer_text_fields.AddMany(controls)
+        for couple in couple_mgr.get_couples_order_id():
+            couple_sizer = wx.BoxSizer(wx.HORIZONTAL)
+            couple_label = wx.StaticText(self, -1, "{0}:".format(couple[0]), style=wx.TE_RIGHT| wx.TE_CENTRE)
+            couple_text = wx.TextCtrl(self, -1, couple[1].couple_name)
+            couple_text.SetMinSize((500,-1))
+            couple_sizer.Add(couple_label)
+            couple_sizer.AddSpacer(5)
+            couple_sizer.Add(couple_text, 3, wx.EXPAND)
+            self.couples_sizer.Add(couple_sizer)
+            self.couples_sizer.AddSpacer(5)
 
-        self.sizer.Add(sizer_text_fields)
+            self.couple_entries.append((couple_label, couple_text))
+        
+        self.couples_save_btn = wx.Button(self,-1, "Save Couples Data")
+        self.couples_sizer.Add(self.couples_save_btn)
+        self.sizer.Add(self.couples_sizer)
+        
+        # JUDGES SETUP
+
+        self.judges_box = wx.StaticBox(self, -1, "Judges Setup")
+        self.judges_sizer = wx.StaticBoxSizer(self.judges_box, wx.VERTICAL)
+        self.judges_entries = [] # (StaticText, TextCtrl)
+
+        #for couple in couple_mgr.get_couples_order_id():
+        #    couple_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        #    couple_label = wx.StaticText(self, -1, "{0}:".format(couple[0]), style=wx.TE_RIGHT| wx.TE_CENTRE)
+        #    couple_text = wx.TextCtrl(self, -1, couple[1].couple_name)
+        #    couple_text.SetMinSize((500,-1))
+        #    couple_sizer.Add(couple_label)
+        #    couple_sizer.AddSpacer(5)
+        #    couple_sizer.Add(couple_text, 3, wx.EXPAND)
+        #    self.couples_sizer.Add(couple_sizer)
+        #    self.couples_sizer.AddSpacer(5)
+        
+        self.judges_save_btn = wx.Button(self,-1, "Save Judges Data")
+        self.judges_sizer.Add(self.judges_save_btn)
+        self.sizer.Add(self.judges_sizer)
+        
+        self.SetAutoLayout(True)
         self.SetSizerAndFit(self.sizer)
 
 
@@ -100,26 +127,7 @@ class MainWindow(wx.Frame):
 
         print "Loading UI..."
 
-        self.tab_window = wx.Notebook(self, -1, style=wx.NB_TOP)
-
-        self.panel_system_setup = SystemSetupPanel(self.tab_window)
-        self.panel_scoring_judges = CoupleScoringJudgesPanel(self.tab_window)
-
-        self.tab_window.AddPage(self.panel_system_setup, "Scoring Setup", True)
-        self.tab_window.AddPage(self.panel_scoring_judges,
-                                "Couple Scoring: Judges", False)
-
         self.scoreboard = sltd_scoreboard.Scoreboard(self)
-
-        self.sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.sizer.Add(self.tab_window, 3, wx.EXPAND)
-        self.sizer.Add(self.scoreboard, 1, wx.EXPAND)
-
-        self.SetAutoLayout(True)
-        self.SetSizer(self.sizer)
-        self.Layout()
-
-        couple_mgr = sltd_couple.CoupleMgr()
 
         # Generate some fake couples for now
         for i in xrange(0, 10):
@@ -131,6 +139,27 @@ class MainWindow(wx.Frame):
 
         # Get list of couples in score order and add them to the leaderboard
         self.scoreboard.populate_scoreboard(couple_mgr.get_couples_order_score())
+
+        self.tab_window = wx.Notebook(self, -1, style=wx.NB_TOP)
+
+        self.panel_system_setup = SystemSetupPanel(self.tab_window)
+        self.panel_scoring_judges = CoupleScoringJudgesPanel(self.tab_window)
+
+        self.tab_window.AddPage(self.panel_system_setup, "Scoring Setup", True)
+        self.tab_window.AddPage(self.panel_scoring_judges,
+                                "Couple Scoring: Judges", False)
+
+        
+
+        self.sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.sizer.Add(self.tab_window, 3, wx.EXPAND)
+        self.sizer.Add(self.scoreboard, 1, wx.EXPAND)
+
+        self.SetAutoLayout(True)
+        self.SetSizer(self.sizer)
+        self.Layout()
+
+        
         
         self.Show()
 
